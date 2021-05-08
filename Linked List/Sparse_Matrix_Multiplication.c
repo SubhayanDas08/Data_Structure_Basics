@@ -60,9 +60,9 @@ void sparse(struct Node **head, struct Node **tail, int row, int col, int arr[ro
 
 
 
-void Add(struct Node **head, struct Node **tail, struct Node *ptr1, struct Node *ptr2)
+void Multiply(struct Node **head, struct Node **tail, struct Node *ptr1, struct Node *ptr2)
     {
-        if (ptr1->r != ptr2->r || ptr1->c != ptr2->c )
+        if (ptr1->c != ptr2->r)
         {
         printf("Not possible");
         return;
@@ -70,31 +70,32 @@ void Add(struct Node **head, struct Node **tail, struct Node *ptr1, struct Node 
 
         struct Node *temp, *temp1, *temp2;      //temp is a new node for the resultant matrix, temp1 is the node for sparse matrix1, temp2 is the node for sparse matrix2
         
+        temp1=ptr1->next;                       //Since the header nodes doesnt contain the actual values 
+        temp2=ptr2->next;
+
         if (*head == NULL)
             {
                 temp = (struct Node *)malloc(sizeof(struct Node));
                 temp->next = NULL;
                 temp->data = 0;
                 temp->r = ptr1->r;
-                temp->c = ptr1->c;
+                temp->c = ptr2->c;
                 *head = *tail = temp;
             }
 
-        float sum = 0, pos1 = 0, pos2 = 0;         //pos1 will contain the temp1(data,i,k) and pos2 will contain temp2(data,k,j)
+        float product = 0, pos1 = 0, pos2 = 0;         //pos1 will contain the temp1(data,i,k) and pos2 will contain temp2(data,k,j)
 
         for (int i = 0; i < ptr1->r; i++)
         {
             for (int j = 0; j < ptr2->c; j++) 
             {
-                
-                temp1=ptr1->next;                       //Since the header nodes doesnt contain the actual values 
-                temp2=ptr2->next;
-                sum = 0;
-                pos1 = 0, pos2 = 0;
-                
+                product = 0;
+                for (int k = 0; k < ptr1->c; k++) {
+
+                    pos1 = 0, pos2 = 0;
                     while (temp1 != NULL)
                     {
-                        if (temp1->r == i && temp1->c == j)
+                        if (temp1->r == i && temp1->c == k)
                         {
                             pos1=temp1->data;
                         }
@@ -103,26 +104,30 @@ void Add(struct Node **head, struct Node **tail, struct Node *ptr1, struct Node 
 
                     while (temp2 != NULL)
                     {
-                        if (temp2->r == i && temp2->c == j)
+                        if (temp2->r == k && temp2->c == j)
                         {
                             pos2=temp2->data;
                         }
                         temp2=temp2->next;
                     }
-                    sum = pos1 + pos2;
+                    product += pos1 * pos2;
                     
-                
-                    if (sum != 0) {
+                temp1=ptr1->next;
+                temp2=ptr2->next;
+                }
+                    
+                    if (product != 0) {
                         temp = (struct Node *)malloc(sizeof(struct Node));
                         temp->next = NULL;
-                        temp->data=sum;
+                        temp->data=product;
                         temp->r=i;
                         temp->c=j;
-
+                        
                         (*head)->data = (*head)->data + 1;
                         
                         (*tail)->next = temp;
                         (*tail) = temp;
+
                     
                 }
             }
@@ -132,11 +137,11 @@ void Add(struct Node **head, struct Node **tail, struct Node *ptr1, struct Node 
 int main()
 {
     struct Node *head1=NULL, *tail1=NULL, *head2=NULL, *tail2=NULL;     //2 sparse matrix linked lists
-    struct Node *head3=NULL, *tail3=NULL;                               //Resultant Linked List
+    struct Node *head3=NULL, *tail3=NULL, *ptr;                               //Resultant Linked List
     
     int r1,r2,c1,c2;
 
-    r1=3;
+    r1=2;
     c1=3;
   
     int a[2][3]={7,0,0,1,2,2};                                          //Sparse Matrix 1
@@ -151,7 +156,7 @@ int main()
         }
     
     printf("\n");
-    
+
     r2=3;
     c2=3;
 
@@ -174,9 +179,31 @@ int main()
     sparse(&head2,&tail2,r2,c2,b);
     Display(head2);
 
-    printf("\n*******SPARSE MATRIX ADDITION******\n");
-    Add(&head3,&tail3,head1,head2);
+    printf("\n*******SPARSE MATRIX MULTIPLICATION******\n");
+    Multiply(&head3,&tail3,head1,head2);
     Display(head3);
+
+    ptr=head3->next;
+
+    printf("\n");
+    for (int i = 0; i < head3->r; i++)
+    {
+        for (int j = 0; j < head3->c; j++)
+        {
+            if(ptr->r==i && ptr->c==j)
+                {
+                    printf("%d | ", ptr->data);
+                    ptr=ptr->next;
+                }
+            else
+                {
+                    printf("0 | ");
+                }
+            
+        }
+    printf("\n"); 
+    }
+    
 
     free(head1);
     free(head2);
